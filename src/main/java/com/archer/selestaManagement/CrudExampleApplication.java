@@ -1,13 +1,13 @@
-package com.archer.selesta;
+package com.archer.selestaManagement;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class SelestaApplication {
+public class CrudExampleApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(SelestaApplication.class, args);
+		SpringApplication.run(CrudExampleApplication.class, args);
 	}
 
 }
