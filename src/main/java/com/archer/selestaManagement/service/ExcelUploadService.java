@@ -23,7 +23,7 @@ public class ExcelUploadService {
         List<Payment> customers = new ArrayList<>();
        try {
            XSSFWorkbook workbook = new XSSFWorkbook(inputStream);
-           XSSFSheet sheet = workbook.getSheet("Customers");
+           XSSFSheet sheet = workbook.getSheetAt(0);
            int rowIndex =0;
            for (Row row : sheet){
                if (rowIndex ==0){
@@ -37,8 +37,10 @@ public class ExcelUploadService {
                    Cell cell = cellIterator.next();
                    switch (cellIndex){
                        case 0 -> payment.setFirstName(cell.getStringCellValue());
-                       case 1 -> payment.setLastName(cell.getStringCellValue());
-                       case 2 -> payment.setAmount(BigDecimal.valueOf((cell.getNumericCellValue())));
+                       //case 1 -> payment.setLastName(cell.getStringCellValue());
+                       case 2 -> payment.setLastName(cell.getStringCellValue());
+                       //case 2 -> payment.setAmount(BigDecimal.valueOf((cell.getNumericCellValue())));
+                       case 3 -> payment.setAmount(BigDecimal.valueOf((cell.getNumericCellValue())));
                        default -> {
                        }
                    }
@@ -51,5 +53,47 @@ public class ExcelUploadService {
        }
        return customers;
    }
+
+    public static List<Payment> addCustomersDataFromExcelToDB(InputStream inputStream, List<Payment> dbList) {
+
+        List<Payment> customersToAdd = getCustomersDataFromExcel(inputStream);
+        Iterator<Payment> paymentIterator = customersToAdd.iterator();
+        Iterator<Payment> dblistIterator = dbList.iterator();
+
+            //String processedData = String.format("%s: %s", nameIterator.next(), codeIterator.next());
+        //while () {
+            for (Payment payment : dbList) {
+                if (paymentIterator.hasNext()) {
+                    Payment paymentToAdd = paymentIterator.next();
+                    if (payment.getFirstName().equals(paymentToAdd.getFirstName())) {
+                        payment.setAmount(payment.getAmount().add(paymentToAdd.getAmount()));
+                    }
+                } else {
+                    break;
+                }
+            }
+        //}
+        return dbList;
+    }
+    public static List<Payment> substractCustomersDataFromExcelToDB(InputStream inputStream, List<Payment> dbList) {
+
+        List<Payment> customersToSubstract = getCustomersDataFromExcel(inputStream);
+        Iterator<Payment> paymentIterator = customersToSubstract.iterator();
+        Iterator<Payment> dblistIterator = dbList.iterator();
+        //while (paymentIterator.hasNext()) {
+            //String processedData = String.format("%s: %s", nameIterator.next(), codeIterator.next());
+            for (Payment payment : dbList) {
+                if (paymentIterator.hasNext()) {
+                    Payment paymentToSubstract = paymentIterator.next();
+                    if (payment.getFirstName().equals(paymentToSubstract.getFirstName())) {
+                        payment.setAmount(payment.getAmount().subtract(paymentToSubstract.getAmount()));
+                    }
+                } else {
+                    break;
+                }
+            }
+        //}
+        return dbList;
+    }
 
 }

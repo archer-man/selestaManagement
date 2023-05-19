@@ -72,6 +72,52 @@ public class PaymentController {
                 .ok(Map.of("Message" , " Customers data uploaded and saved to database successfully"));*/
     }
 
+    @PostMapping(value = "/addition-customers-data")
+    public void addCustomersData(@RequestParam("file") MultipartFile file){
+        if (!getAll().isEmpty()) {
+            if (ExcelUploadService.isValidExcelFile(file)) {
+                try {
+                    List<Payment> payments = ExcelUploadService.addCustomersDataFromExcelToDB(file.getInputStream(), getAll());
+                    paymentsRepo.saveAll(payments);
+                } catch (IOException e) {
+                    throw new IllegalArgumentException("The file is not a valid excel file");
+                }
+            } else if (file.isEmpty()) {
+                System.out.println("please select a file!");
+            } else {
+                throw new IllegalArgumentException("The file is not a valid excel file");
+            }
+        } else {
+            throw new IllegalArgumentException("База пустая.");
+        }
+        //this.customerService.saveCustomersToDatabase(file);
+        /*return ResponseEntity;
+                .ok(Map.of("Message" , " Customers data uploaded and saved to database successfully"));*/
+    }
+
+    @PostMapping(value = "/substraction-customers-data")
+    public void substractCustomersData(@RequestParam("file") MultipartFile file) {
+        if (!getAll().isEmpty()) {
+            if (ExcelUploadService.isValidExcelFile(file)) {
+                try {
+                    List<Payment> payments = ExcelUploadService.substractCustomersDataFromExcelToDB(file.getInputStream(), getAll());
+                    paymentsRepo.saveAll(payments);
+                } catch (IOException e) {
+                    throw new IllegalArgumentException("The file is not a valid excel file");
+                }
+            } else if (file.isEmpty()) {
+                System.out.println("please select a file!");
+            } else {
+                throw new IllegalArgumentException("The file is not a valid excel file");
+            }
+            //this.customerService.saveCustomersToDatabase(file);
+        /*return ResponseEntity;
+                .ok(Map.of("Message" , " Customers data uploaded and saved to database successfully"));*/
+        } else {
+            throw new IllegalArgumentException("База пустая.");
+        }
+    }
+
     /*@GetMapping
     public ResponseEntity<List<Customer>> getCustomers(){
         return new ResponseEntity<>(customerService.getCustomers(), HttpStatus.FOUND);
