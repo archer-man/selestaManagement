@@ -1,17 +1,17 @@
 package com.archer.selestaManagement.dao;
 
-import com.archer.selestaManagement.entity.Payment;
+import com.archer.selestaManagement.entity.Component;
 
-public class PaymentUpdateDAO {
+public class ComponentUpdateDAO {
     public enum Action {
         UPDATE,
         DELETE
     }
 
     private Action action;
-    private Payment data;
+    private Component data;
 
-    public PaymentUpdateDAO () {}
+    public ComponentUpdateDAO() {}
 
     public Action getAction() {
         return action;
@@ -21,11 +21,11 @@ public class PaymentUpdateDAO {
         this.action = action;
     }
 
-    public Payment getData() {
+    public Component getData() {
         return data;
     }
 
-    public void setData(Payment data) {
+    public void setData(Component data) {
         this.data = data;
     }
 
