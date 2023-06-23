@@ -35,6 +35,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     protected void configure(HttpSecurity http) throws Exception {
         http.csrf().disable()
                 .authorizeRequests()
+                .antMatchers("/", "/*.html").permitAll()
+                //.antMatchers("/import-base").hasAnyAuthority("ADMIN")
                 .anyRequest()
                 .authenticated()
                 .and()
@@ -47,7 +49,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .invalidateHttpSession(true)
                 .clearAuthentication(true)
                 .deleteCookies("JSESSIONID")
-                .logoutSuccessUrl("/login");
+                .logoutSuccessUrl("/login")
+                ;
 
        /* http.csrf().disable()
                 .authorizeHttpRequests((authorize) ->

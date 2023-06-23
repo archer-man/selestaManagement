@@ -3,6 +3,8 @@ package com.archer.selestaManagement.controllers;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import com.archer.selestaManagement.dao.ComponentUpdateDAO;
@@ -16,6 +18,8 @@ import org.springframework.web.bind.annotation.*;
 
 import com.archer.selestaManagement.service.ComponentService;
 import org.springframework.web.multipart.MultipartFile;
+
+import javax.servlet.http.HttpServletResponse;
 
 @RestController
 @AllArgsConstructor
@@ -36,7 +40,7 @@ public class ComponentController {
     }
     @PostMapping(value = "/get-same-components")
     public List<String> getAllSame(@RequestParam("file") MultipartFile file) {
-        List<Component> components = new ArrayList<Component>();
+        List components = new ArrayList<Component>();
         List result = new ArrayList<String>();
         var dbList = getAll();
         if (ExcelUploadService.isValidExcelFile(file)) {
@@ -45,35 +49,11 @@ public class ComponentController {
             } catch (IOException e) {
                 throw new IllegalArgumentException("The file is not a valid excel file");
             }
-            var partnumbersOfDbComponents = new ArrayList<String>();
-            var partnumbersOfAddComponents = new ArrayList<String>();
-            for (Component component : dbList) {
-                partnumbersOfDbComponents.add(component.getFootprint());
-            }
-            for (Component item : components) {
-                partnumbersOfAddComponents.add(item.getFootprint());
-            }
             Iterator<Component> componentIterator = components.iterator();
-            for (String addComponent : partnumbersOfAddComponents) {
-                if (partnumbersOfDbComponents.contains(addComponent)){
-                   var index = partnumbersOfDbComponents.indexOf(addComponent);
-                   for (int i=0; i<=index; i++){
-                       result.add("0");
-                   }
-                    for (Component item : dbList) {
-                        if (item.getFootprint() == addComponent){
-                            result.add(item.getAmount().toString());
-                        } else {
-                            result.add("0");
-                        }
-                    }
-                }
-            }
             for (Component component : dbList) {
                 if (componentIterator.hasNext()) {
                     Component componentToAdd = componentIterator.next();
-                    //if (component.getFootprint().equals(componentToAdd.getFootprint())) {
-                    if (dbList.getFootprint().equals(componentToAdd.getFootprint())) {
+                    if (component.getFootprint().equals(componentToAdd.getFootprint())) {
                         result.add(component.getAmount().toString());
                         //.setAmount(component.getAmount().add(componentToAdd.getData().getAmount()));
                     } else {
@@ -86,6 +66,20 @@ public class ComponentController {
         }
         return result;
     }
+
+    @PostMapping(value = "/find-component", consumes = "application/json")
+    public List<Component> searchComponent(final @RequestBody List<String> name) {
+        List components = new ArrayList<Component>();
+        List result = new ArrayList<Component>();
+        var dbList = getAll();
+        for (Component component : dbList){
+            if (component.getName().toLowerCase().equals(name.get(0).toLowerCase())){
+                result.add(component);
+            }
+        }
+        return result;
+    }
+
 
     @PostMapping(consumes = "application/json", produces = "application/json")
     public List<Component> updatePayments(final @RequestBody List<ComponentUpdateDAO> list) {
@@ -221,6 +215,42 @@ public class ComponentController {
         return result;
     }
 
+    @PostMapping(value = "/substract-components-data")
+    public List<Component> substractData(final @RequestBody List<ComponentUpdateDAO> list) {
+
+        List<Component> toDelete = list.stream().filter(o -> o.getAction() == ComponentUpdateDAO.Action.DELETE)
+                .map(ComponentUpdateDAO::getData).collect(Collectors.toList());
+        List<Component> toUpdate = list.stream().filter(o -> o.getAction() == ComponentUpdateDAO.Action.UPDATE)
+                .map(ComponentUpdateDAO::getData).collect(Collectors.toList());
+
+        List<Component> result = new ArrayList<>();
+
+        if (!toDelete.isEmpty()) {
+            componentsRepo.deleteAllInBatch(toDelete);
+        }
+        if (!toUpdate.isEmpty()) {
+            var dbList = getAll();
+            Iterator<ComponentUpdateDAO> componentIterator = list.iterator();
+            Iterator<Component> dblistIterator = dbList.iterator();
+
+            for (Component component : dbList) {
+                if (componentIterator.hasNext()) {
+                    ComponentUpdateDAO componentToAdd = componentIterator.next();
+                    if (component.getFootprint().equals(componentToAdd.getData().getFootprint())) {
+                        component.setAmount(component.getAmount().subtract(componentToAdd.getData().getAmount()));
+                    }
+                } else {
+                    break;
+                }
+            }
+            for (Component component : result){
+                dbList.add(component);
+            }
+            componentsRepo.saveAll(dbList);
+        }
+        return result;
+    }
+
     @PostMapping(value = "/substraction-customers-data")
     public void substractCustomersData(@RequestParam("file") MultipartFile file) {
         if (!getAll().isEmpty()) {
@@ -242,6 +272,16 @@ public class ComponentController {
         } else {
             throw new IllegalArgumentException("База пустая.");
         }
+    }
+
+    @GetMapping("/excel")
+    public void generateExcelReport(HttpServletResponse response) throws Exception{
+        response.setContentType("application/octet-stream");
+        String headerKey = "Content-Disposition";
+        String headerValue = "attachment;filename=components.xls";
+        response.setHeader(headerKey, headerValue);
+        ExcelUploadService.generateExcel(response, componentsRepo.findAll());
+        response.flushBuffer();
     }
 
    /* @GetMapping("/page/{pageno}")

@@ -2,13 +2,21 @@ package com.archer.selestaManagement.service;
 
 import com.archer.selestaManagement.entity.Component;
 import com.archer.selestaManagement.entity.Resistor;
+import org.apache.poi.hssf.usermodel.HSSFRow;
+import org.apache.poi.hssf.usermodel.HSSFSheet;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.formula.functions.T;
 import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.RichTextString;
 import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.xssf.usermodel.XSSFFont;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletResponse;
 import java.math.BigDecimal;
 import java.io.IOException;
 import java.io.InputStream;
@@ -82,13 +90,6 @@ public class ExcelUploadService {
                 while (cellIterator.hasNext()) {
                     Cell cell = cellIterator.next();
                     switch (cellIndex) {
-                        /*case 0:
-                            designator = cell.getStringCellValue();
-                            Matcher resMatcher = resPattern.matcher(designator);
-                            if (resMatcher.find()) {
-                                isResistor = true;
-                            }
-                            break;*/
                         case 1:
                             name = cell.getStringCellValue();
                             var divided = name.split(", ");
@@ -118,12 +119,8 @@ public class ExcelUploadService {
                             }
                             break;
                         case 2:
-                            component.setFootprint(cell.getStringCellValue()/*.split(" ")[0]*/);
+                            component.setFootprint(cell.getStringCellValue());
                             break;
-                        //case 2 -> payment.setAmount(BigDecimal.valueOf((cell.getNumericCellValue())));
-                        /*case 3:
-                            component.setAmount(BigDecimal.valueOf((cell.getNumericCellValue())));
-                            break;*/
                         case 4:
                             component.setAmount(BigDecimal.valueOf((cell.getNumericCellValue())));
                             break;
@@ -163,14 +160,14 @@ public class ExcelUploadService {
     }
     public static List<Component> substractComponentsDataFromExcelToDB(InputStream inputStream, List<Component> dbList) {
 
-        List<Component> customersToSubstract = getComponentsDataFromExcel(inputStream);
-        Iterator<Component> paymentIterator = customersToSubstract.iterator();
+        List<Component> componentsToSubstract = getComponentsDataFromExcel(inputStream);
+        Iterator<Component> componentIterator = componentsToSubstract.iterator();
         Iterator<Component> dblistIterator = dbList.iterator();
-        //while (paymentIterator.hasNext()) {
+        //while (componentIterator.hasNext()) {
             //String processedData = String.format("%s: %s", nameIterator.next(), codeIterator.next());
             for (Component component : dbList) {
-                if (paymentIterator.hasNext()) {
-                    Component componentToSubstract = paymentIterator.next();
+                if (componentIterator.hasNext()) {
+                    Component componentToSubstract = componentIterator.next();
                     if (component.getName().equals(componentToSubstract.getName())) {
                         component.setAmount(component.getAmount().subtract(componentToSubstract.getAmount()));
                     }
@@ -180,6 +177,41 @@ public class ExcelUploadService {
             }
         //}
         return dbList;
+    }
+
+    public static void generateExcel(HttpServletResponse response, List<Component> dbList) throws Exception {
+
+        List<Component> components = dbList;
+
+        HSSFWorkbook workbook = new HSSFWorkbook();
+        HSSFSheet sheet = workbook.createSheet("Компоненты");
+        HSSFRow row = sheet.createRow(0);
+
+        row.createCell(0).setCellValue("Name");
+        row.createCell(1).setCellValue("Part Number");
+        row.createCell(2).setCellValue("Characteristic1");
+        row.createCell(3).setCellValue("Characteristic2");
+        row.createCell(4).setCellValue("Characteristic3");
+        row.createCell(5).setCellValue("Characteristic4");
+        row.createCell(6).setCellValue("Amount");
+        int dataRowIndex = 1;
+        for (Component component : dbList) {
+            HSSFRow dataRow = sheet.createRow(dataRowIndex);
+            dataRow.createCell(0).setCellValue(component.getName());
+            dataRow.createCell(1).setCellValue(component.getFootprint());
+            dataRow.createCell(2).setCellValue(component.getCharacteristic1());
+            dataRow.createCell(3).setCellValue(component.getCharacteristic2());
+            dataRow.createCell(4).setCellValue(component.getCharacteristic3());
+            dataRow.createCell(5).setCellValue(component.getCharacteristic4());
+            dataRow.createCell(6).setCellValue(component.getAmount().toString());
+            dataRowIndex++;
+        }
+
+        ServletOutputStream ops = response.getOutputStream();
+        workbook.write(ops);
+        workbook.close();
+        ops.close();
+
     }
 
 }
