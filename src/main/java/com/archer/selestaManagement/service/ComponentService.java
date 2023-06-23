@@ -18,26 +18,11 @@ import java.util.List;
 public class ComponentService {
     private ComponentsRepository componentsRepository;
 
-    public void saveCustomersToDatabase(MultipartFile file){
-        if(ExcelUploadService.isValidExcelFile(file)){
-            try {
-                List<Component> components = ExcelUploadService.getComponentsDataFromExcel1(file.getInputStream());
-                this.componentsRepository.saveAll(components);
-            } catch (IOException e) {
-                throw new IllegalArgumentException("The file is not a valid excel file");
-            }
-        }
-    }
-
     public List<Component> getCustomers(){
         return componentsRepository.findAll();
     }
 
-    /*public Page<Payment> getByPaginate(int currentPage, int size) {
-        Pageable p = PageRequest.of(currentPage, size);
-        return paymentsRepository.findAll(p);
-    }*/
-    public Page<Component> getEmployeePagination(Integer pageNumber, Integer pageSize, String sortProperty) {
+    public Page<Component> getComponentPagination(Integer pageNumber, Integer pageSize, String sortProperty) {
         Pageable pageable = null;
         if(null!=sortProperty){
             pageable = PageRequest.of(pageNumber, pageSize, Sort.Direction.ASC,sortProperty);

@@ -1,10 +1,7 @@
 package com.archer.selestaManagement.controllers;
 
 import java.io.IOException;
-import java.math.BigDecimal;
 import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import com.archer.selestaManagement.dao.ComponentUpdateDAO;
@@ -55,7 +52,6 @@ public class ComponentController {
                     Component componentToAdd = componentIterator.next();
                     if (component.getFootprint().equals(componentToAdd.getFootprint())) {
                         result.add(component.getAmount().toString());
-                        //.setAmount(component.getAmount().add(componentToAdd.getData().getAmount()));
                     } else {
                         result.add("0");
                     }
@@ -114,9 +110,6 @@ public class ComponentController {
         } else {
             throw new IllegalArgumentException("The file is not a valid excel file");
         }
-        //this.customerService.saveCustomersToDatabase(file);
-        /*return ResponseEntity;
-                .ok(Map.of("Message" , " Customers data uploaded and saved to database successfully"));*/
     }
     @PostMapping(value = "/upload-file")
     public List<Component> uploadFileForImport(@RequestParam("file") MultipartFile file){
@@ -136,24 +129,6 @@ public class ComponentController {
         return components1;
     }
 
-   /* @PostMapping(value = "/upload-file", produces = "application/json")
-    public List<String> uploadFileForImport(@RequestParam("file") MultipartFile file){
-        List components1 = new ArrayList<Component>();
-        List components2 = new ArrayList<String>();
-        if(ExcelUploadService.isValidExcelFile(file)){
-            try {
-                List<Component> components = ExcelUploadService.getComponentsDataFromExcel1(file.getInputStream());
-                return getAllSame(components);
-            } catch (IOException e) {
-                throw new IllegalArgumentException("The file is not a valid excel file");
-            }
-        } else if (file.isEmpty()) {
-            System.out.println("please select a file!");
-        } else {
-            throw new IllegalArgumentException("The file is not a valid excel file");
-        }
-        return components2;
-    }*/
     @PostMapping(value = "/addition-customers-data")
     public void addCustomersData(@RequestParam("file") MultipartFile file){
         if (!getAll().isEmpty()) {
@@ -172,9 +147,6 @@ public class ComponentController {
         } else {
             throw new IllegalArgumentException("База пустая.");
         }
-        //this.customerService.saveCustomersToDatabase(file);
-        /*return ResponseEntity;
-                .ok(Map.of("Message" , " Customers data uploaded and saved to database successfully"));*/
     }
 
     @PostMapping(value = "/addition-components-data")
@@ -266,9 +238,6 @@ public class ComponentController {
             } else {
                 throw new IllegalArgumentException("The file is not a valid excel file");
             }
-            //this.customerService.saveCustomersToDatabase(file);
-        /*return ResponseEntity;
-                .ok(Map.of("Message" , " Customers data uploaded and saved to database successfully"));*/
         } else {
             throw new IllegalArgumentException("База пустая.");
         }
@@ -284,34 +253,16 @@ public class ComponentController {
         response.flushBuffer();
     }
 
-   /* @GetMapping("/page/{pageno}")
-    public String findPaginated(@PathVariable int pageno, Model m) {
-
-        Page<Payment> paylist = customerService.getByPaginate(pageno, 2);
-        m.addAttribute("emp", paylist);
-        m.addAttribute("currentPage", pageno);
-        m.addAttribute("totalPages", paylist.getTotalPages());
-        m.addAttribute("totalItem", paylist.getTotalElements());
-        return "index";
-    }*/
-    //@RequestMapping(value = "/pagingAndShortingEmployees/{pageNumber}/{pageSize}", method = RequestMethod.GET)
     @GetMapping(value = "/pagingAndShortingEmployees/{pageNumber}/{pageSize}")
     public Page<Component> paymentPagination(@PathVariable Integer pageNumber, @PathVariable Integer pageSize){
 
-        return componentService.getEmployeePagination(pageNumber,pageSize, null);
+        return componentService.getComponentPagination(pageNumber,pageSize, null);
     }
 
-    /*@RequestMapping(value = "/pagingAndShortingEmployees/{pageNumber}/{pageSize}/{sortProperty}",
-            method = RequestMethod.GET)*/
     @GetMapping(value = "/pagingAndShortingEmployees/{pageNumber}/{pageSize}/{sortProperty}")
     public Page<Component> paymentPagination(@PathVariable Integer pageNumber,
                                              @PathVariable Integer pageSize,
                                              @PathVariable String sortProperty) {
-        return componentService.getEmployeePagination(pageNumber, pageSize, sortProperty);
+        return componentService.getComponentPagination(pageNumber, pageSize, sortProperty);
     }
-
-    /*@GetMapping
-    public ResponseEntity<List<Customer>> getCustomers(){
-        return new ResponseEntity<>(customerService.getCustomers(), HttpStatus.FOUND);
-    }*/
 }
