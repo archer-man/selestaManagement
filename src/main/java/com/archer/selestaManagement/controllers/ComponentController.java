@@ -11,9 +11,11 @@ import com.archer.selestaManagement.service.ExcelUploadService;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.web.bind.annotation.*;
 
-import com.archer.selestaManagement.service.ComponentService;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletResponse;
@@ -24,7 +26,6 @@ import javax.servlet.http.HttpServletResponse;
 public class ComponentController {
 
     private ComponentsRepository componentsRepo;
-    private ComponentService componentService;
 
     @Autowired
     public void setComponentsRepo(ComponentsRepository componentsRepo) {
@@ -96,7 +97,7 @@ public class ComponentController {
         return result;
     }
 
-    @PostMapping(value = "/upload-customers-data")
+    /*@PostMapping(value = "/upload-customers-data")
     public void uploadCustomersData(@RequestParam("file") MultipartFile file){
         if(ExcelUploadService.isValidExcelFile(file)){
             try {
@@ -110,7 +111,7 @@ public class ComponentController {
         } else {
             throw new IllegalArgumentException("The file is not a valid excel file");
         }
-    }
+    }*/
     @PostMapping(value = "/upload-file")
     public List<Component> uploadFileForImport(@RequestParam("file") MultipartFile file){
         List components1 = new ArrayList<Component>();
@@ -129,7 +130,7 @@ public class ComponentController {
         return components1;
     }
 
-    @PostMapping(value = "/addition-customers-data")
+    /*@PostMapping(value = "/addition-customers-data")
     public void addCustomersData(@RequestParam("file") MultipartFile file){
         if (!getAll().isEmpty()) {
             if (ExcelUploadService.isValidExcelFile(file)) {
@@ -147,7 +148,7 @@ public class ComponentController {
         } else {
             throw new IllegalArgumentException("База пустая.");
         }
-    }
+    }*/
 
     @PostMapping(value = "/addition-components-data")
     public List<Component> addData(final @RequestBody List<ComponentUpdateDAO> list) {
@@ -156,9 +157,7 @@ public class ComponentController {
                 .map(ComponentUpdateDAO::getData).collect(Collectors.toList());
         List<Component> toUpdate = list.stream().filter(o -> o.getAction() == ComponentUpdateDAO.Action.UPDATE)
                 .map(ComponentUpdateDAO::getData).collect(Collectors.toList());
-
         List<Component> result = new ArrayList<>();
-
         if (!toDelete.isEmpty()) {
             componentsRepo.deleteAllInBatch(toDelete);
         }
@@ -166,7 +165,6 @@ public class ComponentController {
             var dbList = getAll();
             Iterator<ComponentUpdateDAO> componentIterator = list.iterator();
             Iterator<Component> dblistIterator = dbList.iterator();
-
             for (Component component : dbList) {
                 if (componentIterator.hasNext()) {
                     ComponentUpdateDAO componentToAdd = componentIterator.next();
@@ -223,7 +221,7 @@ public class ComponentController {
         return result;
     }
 
-    @PostMapping(value = "/substraction-customers-data")
+    /*@PostMapping(value = "/substraction-customers-data")
     public void substractCustomersData(@RequestParam("file") MultipartFile file) {
         if (!getAll().isEmpty()) {
             if (ExcelUploadService.isValidExcelFile(file)) {
@@ -241,7 +239,7 @@ public class ComponentController {
         } else {
             throw new IllegalArgumentException("База пустая.");
         }
-    }
+    }*/
 
     @GetMapping("/excel")
     public void generateExcelReport(HttpServletResponse response) throws Exception{
@@ -253,16 +251,26 @@ public class ComponentController {
         response.flushBuffer();
     }
 
+    public Page<Component> getComponentPagination(Integer pageNumber, Integer pageSize, String sortProperty) {
+        Pageable pageable = null;
+        if(null!=sortProperty){
+            pageable = PageRequest.of(pageNumber, pageSize, Sort.Direction.ASC,sortProperty);
+        }else {
+            pageable = PageRequest.of(pageNumber, pageSize, Sort.Direction.ASC,"id");
+        }
+        return componentsRepo.findAll(pageable);
+    }
+
     @GetMapping(value = "/pagingAndShortingEmployees/{pageNumber}/{pageSize}")
     public Page<Component> paymentPagination(@PathVariable Integer pageNumber, @PathVariable Integer pageSize){
 
-        return componentService.getComponentPagination(pageNumber,pageSize, null);
+        return getComponentPagination(pageNumber,pageSize, null);
     }
 
     @GetMapping(value = "/pagingAndShortingEmployees/{pageNumber}/{pageSize}/{sortProperty}")
     public Page<Component> paymentPagination(@PathVariable Integer pageNumber,
                                              @PathVariable Integer pageSize,
                                              @PathVariable String sortProperty) {
-        return componentService.getComponentPagination(pageNumber, pageSize, sortProperty);
+        return getComponentPagination(pageNumber, pageSize, sortProperty);
     }
 }

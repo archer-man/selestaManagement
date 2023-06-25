@@ -64,7 +64,6 @@
       <button class="btn btn-primary" type="button" onclick="startUploading()" ><i class="fa fa-upload"></i> Загрузить </button>
         <button class="btn btn-info" type="button" multiple style="margin-left: 150px" onclick="uploadFileWithAddition()" ><i class="fa fa-upload"></i> Пополнить склад </button>
         <button class="btn btn-dark" type="button" onclick="uploadFileWithSubstract()" ><i class="fa fa-upload"></i> Отгрузить со склада </button>
-
       </div>
   </div>
   <div id="upload-status-container">
@@ -198,9 +197,6 @@
       processData: false,
       contentType: false,
       type: 'POST',
-      progress: onUploadProgress,
-      load: onUploadComplete,
-      error: onUploadError,
       success: function(data){
         $.ajax({
           url: '/components/get-same-components',

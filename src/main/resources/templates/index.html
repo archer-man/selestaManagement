@@ -416,6 +416,7 @@
 
     $(document).on("change", ".components-table tbody input", function () {
         $(this).closest("tr").addClass("dirty");
+        $("button.save").removeClass("btn-secondary").addClass("btn-warning");
     });
 
     tableRefresh();

@@ -167,13 +167,13 @@ public class ExcelUploadService {
         HSSFWorkbook workbook = new HSSFWorkbook();
         HSSFSheet sheet = workbook.createSheet("Компоненты");
         HSSFRow row = sheet.createRow(0);
-        row.createCell(0).setCellValue("Name");
+        row.createCell(0).setCellValue("Имя");
         row.createCell(1).setCellValue("Part Number");
-        row.createCell(2).setCellValue("Characteristic1");
-        row.createCell(3).setCellValue("Characteristic2");
-        row.createCell(4).setCellValue("Characteristic3");
-        row.createCell(5).setCellValue("Characteristic4");
-        row.createCell(6).setCellValue("Amount");
+        row.createCell(2).setCellValue("Характеристика 1");
+        row.createCell(3).setCellValue("Характеристика 2");
+        row.createCell(4).setCellValue("Характеристика 3");
+        row.createCell(5).setCellValue("Характеристика 4");
+        row.createCell(6).setCellValue("Количество");
         int dataRowIndex = 1;
         for (Component component : dbList) {
             HSSFRow dataRow = sheet.createRow(dataRowIndex);
